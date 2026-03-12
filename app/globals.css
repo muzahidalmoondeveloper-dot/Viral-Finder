@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-a: #f7f8f5;
+  --bg-b: #e7efe8;
+  --bg-c: #fff8ef;
+  --line: rgba(15, 23, 42, 0.08);
+}
+
+body {
+  background:
+    radial-gradient(circle at 15% 20%, rgba(20, 184, 166, 0.14), transparent 28%),
+    radial-gradient(circle at 85% 10%, rgba(249, 115, 22, 0.16), transparent 30%),
+    linear-gradient(145deg, var(--bg-a), var(--bg-b) 55%, var(--bg-c));
+}
+
+.glass-card {
+  @apply rounded-2xl border border-white/60 bg-white/80 shadow-panel backdrop-blur;
+}
+
+.field {
+  @apply w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm transition focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200;
+}
+
+.label {
+  @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600;
+}
+
+.table-head-btn {
+  @apply inline-flex items-center gap-1 rounded px-2 py-1 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 hover:bg-slate-100;
+}
+
+.chip {
+  @apply inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700;
+}
