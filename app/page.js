@@ -193,6 +193,7 @@ export default function HomePage() {
           loading={loading}
           error={error}
           onVisibleResultsChange={setVisibleResults}
+          sortBy={filters.sortBy}
         />
       </section>
     </main>
