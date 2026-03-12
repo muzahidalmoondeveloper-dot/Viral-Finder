@@ -23,8 +23,8 @@ const COLUMNS = [
   { key: "watchHours", label: "Watch Hours", sortable: false }
 ];
 
-export default function ResultsTable({ results, loading, error, onVisibleResultsChange }) {
-  const [sortConfig, setSortConfig] = useState({ key: "viralScore", direction: "desc" });
+export default function ResultsTable({ results, loading, error, onVisibleResultsChange, sortBy = "viralScore" }) {
+  const [sortConfig, setSortConfig] = useState({ key: sortBy, direction: "desc" });
   const [page, setPage] = useState(1);
   const [copyMessage, setCopyMessage] = useState("");
 

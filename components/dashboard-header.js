@@ -7,7 +7,7 @@ export default function DashboardHeader() {
             Content Research Dashboard
           </p>
           <h1 className="font-display text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            YouTube Viral Title Finder
+            Viral Youtube Finder
           </h1>
           <p className="mt-3 max-w-3xl text-sm text-slate-600 sm:text-base">
             Discover high-performing YouTube titles by topic, estimate viral potential from public
