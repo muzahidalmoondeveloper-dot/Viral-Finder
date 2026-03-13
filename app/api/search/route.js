@@ -130,7 +130,7 @@ export async function POST(request) {
       return NextResponse.json({ error: API_ERROR_MESSAGES.MISSING_API_KEY }, { status: 500 });
     }
 
-    const candidateCount = Math.min(MAX_ALLOWED_RESULTS, maxResults * 3);
+    const candidateCount = Math.min(150, maxResults * 3);
 
     const searchItems = await searchVideoCandidates({
       topic,
