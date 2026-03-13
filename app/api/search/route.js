@@ -120,46 +120,78 @@ function normalizeVideo(video, topic) {
 }
 
 export async function POST(request) {
-  try {
-    const payload = await request.json();
-    const { topic, contentType, sortBy, maxResults, startDate, endDate } = validatePayload(payload);
+    try {
+      const payload = await request.json();
+      const { topic, contentType, sortBy, maxResults, startDate, endDate } = validatePayload(payload);
 
-    const apiKey = process.env.YOUTUBE_API_KEY;
+      const apiKey = process.env.YOUTUBE_API_KEY;
 
-    if (!apiKey) {
-      return NextResponse.json({ error: API_ERROR_MESSAGES.MISSING_API_KEY }, { status: 500 });
+      if (!apiKey) {
+        return NextResponse.json({ error: API_ERROR_MESSAGES.MISSING_API_KEY }, { status: 500 });
+      }
+
+      // Fetch candidates in batches until we have enough filtered results
+      const MAX_PER_REQUEST = 50; // YouTube API limit
+      const MAX_BATCHES = 20; // Safety limit to prevent excessive API calls
+      let allNormalized = [];
+      let nextPageToken = undefined;
+      
+      // Continue fetching until we have enough results or hit safety limits
+      for (let batch = 0; batch < MAX_BATCHES && allNormalized.length < maxResults; batch++) {
+        const searchResponse = await searchVideoCandidates({
+          topic,
+          candidateCount: MAX_PER_REQUEST,
+          publishedAfter: toIsoDateTime(startDate, "start"),
+          publishedBefore: toIsoDateTime(endDate, "end"),
+          apiKey,
+          pageToken: nextPageToken
+        });
+
+        // Handle the new return format: { items: [...], nextPageToken: "..." }
+        if (!searchResponse || !searchResponse.items || searchResponse.items.length === 0) {
+          // No more results available
+          break;
+        }
+
+        const searchItems = searchResponse.items;
+
+        // Extract video IDs
+        const ids = searchItems
+          .map((item) => item?.id?.videoId)
+          .filter(Boolean);
+
+        if (!ids.length) {
+          continue;
+        }
+
+        // Fetch detailed video stats
+        const videos = await fetchVideosByIds({ ids, apiKey });
+
+        // Normalize and filter by content type
+        const batchNormalized = videos
+          .map((item) => normalizeVideo(item, topic))
+          .filter((item) => matchesRequestedContentType(item.inferredContentType, contentType));
+
+        allNormalized.push(...batchNormalized);
+        
+        // Update nextPageToken for pagination
+        nextPageToken = searchResponse.nextPageToken;
+        
+        // If no next page token, we've reached the end of results
+        if (!nextPageToken) {
+          break;
+        }
+      }
+
+      // Sort all normalized results
+      const sorted = sortResults(allNormalized, sortBy);
+      
+      // Take exactly what was requested (or fewer if not enough available)
+      const finalResults = sorted.slice(0, maxResults);
+
+      return NextResponse.json({ results: finalResults }, { status: 200 });
+    } catch (error) {
+      const status = error.status || 400;
+      return NextResponse.json({ error: error.message || "Search failed." }, { status });
     }
-
-    const candidateCount = Math.min(150, maxResults * 3);
-
-    const searchItems = await searchVideoCandidates({
-      topic,
-      candidateCount,
-      publishedAfter: toIsoDateTime(startDate, "start"),
-      publishedBefore: toIsoDateTime(endDate, "end"),
-      apiKey
-    });
-
-    const ids = searchItems
-      .map((item) => item?.id?.videoId)
-      .filter(Boolean)
-      .filter((id, index, list) => list.indexOf(id) === index);
-
-    if (!ids.length) {
-      return NextResponse.json({ results: [] }, { status: 200 });
-    }
-
-    const videos = await fetchVideosByIds({ ids, apiKey });
-
-    const normalized = videos
-      .map((item) => normalizeVideo(item, topic))
-      .filter((item) => matchesRequestedContentType(item.inferredContentType, contentType));
-
-    const sorted = sortResults(normalized, sortBy).slice(0, maxResults);
-
-    return NextResponse.json({ results: sorted }, { status: 200 });
-  } catch (error) {
-    const status = error.status || 400;
-    return NextResponse.json({ error: error.message || "Search failed." }, { status });
   }
-}
