@@ -134,7 +134,7 @@ export default function SearchForm({
               disabled={loading}
               className="inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading ? "Searching..." : "Search Viral Titles"}
+              {loading ? "Searching..." : "Search Viral Videos/Shorts"}
             </button>
           </div>
         </div>
