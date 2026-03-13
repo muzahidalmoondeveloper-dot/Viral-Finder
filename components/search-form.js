@@ -72,7 +72,7 @@ export default function SearchForm({
               className="field"
               type="number"
               min={1}
-              max={50}
+              max={500}
               name="maxResults"
               value={values.maxResults}
               onChange={handleFieldChange}
